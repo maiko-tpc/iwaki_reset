@@ -1,45 +1,21 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <time.h>
 
 int main(int argc, char * argv[]){
 
   int sockfd ;
   int len ;
-  int i;
   struct sockaddr_in address ;
-  char command[256];
   int result ;
-  int result2;
   int data_length;
   char data[256];
-  char header[32];
-  char buff[256];
-  long buff2;
-  char *endptr;
-  long ADC_val[16];
-
-  float pressure;
-  float temp;
-  float density;
-  float dew;
-  float dew_ppm;
-  float flow[2];
-  int rec_int;
-
-  char *outfile;
-
-  double p_offset;
 
   bzero((char*)&address, sizeof(address));
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  //  printf("id= %d \n", sockfd);
+
   address.sin_family = AF_INET ;
   address.sin_addr.s_addr =inet_addr("172.16.213.19"); // OKTAVIAN
   //address.sin_addr.s_addr =inet_addr("172.16.205.94"); // RCNP
@@ -54,7 +30,23 @@ int main(int argc, char * argv[]){
     return 0;
   }
 
+  /* turn off the power modules */
+  printf("Turn off the power modules...\n");
+  send(sockfd, "01BWRI00333,001,1\r\n", 256, 0);
+  data_length=recv(sockfd, &data, 256, 0);
+
+  /* wait 5 seconds */
+  sleep(5);
+
+  /* turn on the power modules */
+  printf("Turn on the power modules...\n");
+  send(sockfd, "01BWRI00333,001,0\r\n", 256, 0);
+  data_length=recv(sockfd, &data, 256, 0);
   
+  printf("Done.\n");
+
+  /* close the connection */
+  close(sockfd);
 
   return 0;
 }
